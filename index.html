@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaysia Forest Coverage Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <style>
+        body {
+            font: sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-radius: 15px;
+            margin: -20px -20px 40px -20px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            margin-top: 10px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .description {
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .description h2 {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .description p {
+            color: #34495e;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        
+        .highlights {
+            background-color: #E5F5E4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .highlights h3 {
+            color: #27ae60;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .highlights ul {
+            color: #2c3e50;
+            padding-left: 20px;
+        }
+        
+        .highlights li {
+            margin-bottom: 8px;
+        }
+        
+        .data-source {
+            background: #F6FAD7;
+            border: 1px solid #C0C4A1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.95em;
+            color: #1E1F1A;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .description {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Analysis of Malaysia's Permanent Forest Cover in 2021</h1>
+            <div class="subtitle">Permanent Forest Cover Distribution and Comparison Across Malaysian States (2021 Data)</div>
+        </div>
+        
+        <div class="description">
+            <h2>Understanding Malaysia's Forest Heritage</h2>
+            <p>
+                Malaysia is famous for its rich biodiversity and extensive forest cover, with one of the world's oldest rainforests. This interactive colour-coded map 
+                visually presents the permanent forest cover rates across Malaysia's states in 2021, providing crucial insights into the nation's environmental 
+                conservation practices and differences in forest coverage between states.
+            </p>
+            <p>
+                This visualisation employs a colour-coding system, with deep green hues representing higher forest cover, making it easier to identify states with 
+                the highest percentage of forest cover. These data are essential for understanding conservation priorities, environmental policy planning, and 
+                Malaysia's efforts towards achieving the Sustainable Development Goals.
+            </p>
+            
+            <div class="highlights">
+                <h3>Key Description from the Visualization:</h3>
+                <ul>
+                    <li><strong>Regional differences:</strong>  Forest cover in Sabah and Sarawak is generally higher than in western Malaysia. 
+                        The state with the highest forest cover in the west is Melaka (which also holds the highest forest cover across the whole of Malaysia). </li>
+                    <li><strong>Protection effectiveness:</strong> Several states maintain forest cover exceeding 40%, demonstrating effective conservation measures.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="visualization-container">
+            <div id="vis"></div>
+        </div>
+        
+        <div class="data-source">
+            <strong>Data Source:</strong> This visualization is based on official forest reserve data from Malaysian government sources, 
+            processed and cleaned for the 2021 reporting period. The geographical boundaries are sourced from Natural Earth Data 
+            to ensure accuracy and consistency with international mapping standards.
+            <a href= https://open.dosm.gov.my/data-catalogue/forest_reserve_state>
+                Click here to view the source website
+            </a>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var vlSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "description": "Choropleth of Malaysia states - permanent forest area percentage (2021). Ocean = blue, graticule included.",
+            "width": 700,
+            "height": 400,
+            "background": "#cfeeff",
+            "layer": [
+                {
+                    "name": "graticule",
+                    "data": {"graticule": true},
+                    "mark": {
+                        "type": "geoshape",
+                        "stroke": "#b8d0e6",
+                        "strokeWidth": 0.6,
+                        "fill": null
+                    },
+                    "projection": {"type": "mercator", "center": [109, 4], "scale": 1200}
+                },
+                {
+                    "name": "states",
+                    "data": {
+                        "url": "https://raw.githubusercontent.com/jnewbery/CartogramMalaysia/9ac25c828e0306dfa2c2869f98eb2b357da69764/public/data/malaysia-states.topojson",
+                        "format": {"type": "topojson", "feature": "states"}
+                    },
+                    "transform": [
+                        {
+                            "lookup": "properties.Name",
+                            "from": {
+                                "data": {
+                                    "url": "https://raw.githubusercontent.com/LiWanyue610/FIT3179-Week9-Homework/refs/heads/main/cleaned_forest_reserve_state.csv",
+                                    "format": {"type": "csv"}
+                                },
+                                "key": "name",
+                                "fields": ["forest_cover_rate_percentage"]
+                            }
+                        }
+                    ],
+                    "mark": {
+                        "type": "geoshape",
+                        "stroke": "#666666",
+                        "strokeWidth": 0.6
+                    },
+                    "encoding": {
+                        "color": {
+                            "field": "forest_cover_rate_percentage",
+                            "type": "quantitative",
+                            "title": "Permanent Forest Coverage (%)",
+                            "scale": {
+                                "type": "threshold",
+                                "domain": [10, 20, 30, 40, 50, 60],
+                                "range": ["#EBFAEA", "#A3EA9F", "#5AD954", "#2CAB26", "#23861D", "#196015", "#051505"]
+                            },
+                            "legend": {
+                                "orient": "right", 
+                                "titleLimit": 200,
+                                "symbolType": "square"
+                            }
+                        },
+                        "tooltip": [
+                            {"field": "properties.Name", "type": "nominal", "title": "State"},
+                            {"field": "forest_cover_rate_percentage", "type": "quantitative", "title": "Forest Coverage (%)", "format": ".1f"}
+                        ]
+                    },
+                    "projection": {"type": "mercator", "center": [109, 4], "scale": 1200}
+                }
+            ],
+            "config": {
+                "view": {"stroke": "transparent"},
+                "axis": {"domain": false}
+            }
+        };
+
+        vegaEmbed('#vis', vlSpec, {
+            actions: false,
+            renderer: 'svg'
+        }).catch(console.error);
+    </script>
+</body>
+</html>
